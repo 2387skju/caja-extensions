@@ -210,7 +210,12 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 
 	g_string_append_printf (mailto,"--attach ");
 	for (l = file_list ; l; l=l->next){
-		g_string_append_printf (mailto,"\"%s\" ", (char *)l->data);
+		char *filename = (char *) l->data;
+		if (g_str_has_prefix (filename, "file://") == TRUE) {
+			filename = g_filename_from_uri(filename, NULL, NULL);
+		}
+		g_string_append_printf (mailto, "%s ", g_shell_quote (filename) );
+		g_free (filename);
 	}
 }
 
