@@ -103,13 +103,12 @@ init (NstPlugin *plugin)
 		/* Find what the default mailer is */
 		if (strstr (mail_cmd, "balsa"))
 			type = MAILER_BALSA;
-		else if (strstr (mail_cmd, "thunder") || strstr (mail_cmd, "seamonkey")) {
+		else if (strstr (mail_cmd, "thunder") || strstr (mail_cmd, "seamonkey"))
 			type = MAILER_THUNDERBIRD;
-		} else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws"))
+		else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws"))
 			type = MAILER_SYLPHEED;
-		else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution")) {
+		else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution"))
 			type = MAILER_EVO;
-		}
 	}
 
 	if (mail_cmd == NULL)
@@ -136,7 +135,7 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 
 	g_string_append (mailto, "mailto:");
 
-		const char *text;
+	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
 	if (text != NULL && *text != '\0')
@@ -144,9 +143,9 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"?attach=\"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto,"&attach=\"%s\"", (char *)l->data);
+	g_string_append_printf (mailto,"?");
+	for (l = file_list ; l; l=l->next){
+		g_string_append_printf (mailto,"attach=\"%s\"&", (char *)l->data);
 	}
 }
 
@@ -166,8 +165,7 @@ get_balsa_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto," --attach=\"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
+	for (l = file_list ; l; l=l->next){
 		g_string_append_printf (mailto," --attach=\"%s\"", (char *)l->data);
 	}
 }
@@ -207,9 +205,9 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"--attach \"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto," \"%s\"", (char *)l->data);
+	g_string_append_printf (mailto,"--attach ");
+	for (l = file_list ; l; l=l->next){
+		g_string_append_printf (mailto,"\"%s\" ", (char *)l->data);
 	}
 }
 
