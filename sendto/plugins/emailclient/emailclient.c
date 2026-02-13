@@ -200,9 +200,13 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 		const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\"", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // to handle character ?
+		char *text_esc_quote = g_shell_quote (text_esc); // escape '
+		g_string_append_printf (mailto, "%s", text_esc_quote);
+		g_free (text_esc);
+		g_free (text_esc_quote);
+	} else
 		g_string_append (mailto, "\"\"");
 
 	g_string_append_printf (mailto,"?");
@@ -225,9 +229,11 @@ get_balsa_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\"", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_quote = g_shell_quote (text); // escape '
+		g_string_append_printf (mailto, "%s", text_quote);
+		g_free (text_quote);
+	} else
 		g_string_append (mailto, "\"\"");
 
 	for (l = file_list ; l; l=l->next){
@@ -245,8 +251,13 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "to='%s',", text);
+	if (text != NULL && *text != '\0') {
+		char *text_esc = replace_a_char_with_str (text, '\"', "\\\""); // a single " prevent programm to start ( because outer quotes are ")
+		char *text_esc2 = replace_a_char_with_str (text_esc, '\'', "\\\'"); // a single ' prevent programm to start
+		g_string_append_printf (mailto, "to='%s',", text_esc2);
+		g_free (text_esc);
+		g_free (text_esc2);
+	}
 
 	g_string_append_printf (mailto,"attachment='");
 	for (l = file_list ; l; l=l->next){
@@ -268,12 +279,16 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\" ", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // to handle character ?
+		char *text_esc_quote = g_shell_quote (text_esc); // escape '
+		g_string_append_printf (mailto, "%s", text_esc_quote);
+		g_free (text_esc);
+		g_free (text_esc_quote);
+	} else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"--attach");
+	g_string_append_printf (mailto," --attach");
 	for (l = file_list ; l; l=l->next){
 		char *filename_clean = g_filename_from_uri ((char *) l->data, NULL, NULL); // sylpheed doesn't understand URIs
 		char *filename_clean_esc = g_shell_quote (filename_clean); // escape '
@@ -293,12 +308,16 @@ get_clawsmail_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_li
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\" ", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // to handle character ?
+		char *text_esc_quote = g_shell_quote (text_esc); // escape '
+		g_string_append_printf (mailto, "%s", text_esc_quote);
+		g_free (text_esc);
+		g_free (text_esc_quote);
+	} else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"--attach");
+	g_string_append_printf (mailto," --attach");
 	for (l = file_list ; l; l=l->next){
 		g_string_append_printf (mailto," \"%s\"", (char *)l->data);
 	}
