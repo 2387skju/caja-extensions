@@ -150,6 +150,46 @@ GtkWidget* get_contacts_widget (NstPlugin *plugin)
 	return entry;
 }
 
+/**
+ * replace_a_char_with_str:
+ * @my_str: (type *char) a literal string
+ * @needle: (type char) a single character
+ * @replacement: (type *char) a literal string
+ * 
+ * Overwrite all positions of the character (@needle),
+ * with a string (@replacment).
+ *
+ * The return value must be freed with g_free().
+ * 
+ * Returns: (type filename) (transfer full): replaced string
+ **/
+gchar*
+replace_a_char_with_str (const gchar *my_str, char needle, char *replacement)
+{
+  /* Code based on g_shell_quote() from glib */
+  const gchar *p;
+  GString *dest;
+
+  g_return_val_if_fail (my_str != NULL, NULL);
+
+  dest = g_string_new ("");
+
+  p = my_str;
+
+  while (*p)
+    {
+      /* Replace needle with replacement */
+      if (*p == needle)
+        g_string_append (dest, replacement);
+      else
+        g_string_append_c (dest, *p);
+
+      ++p;
+    }
+
+  return g_string_free (dest, FALSE);
+}
+
 static void
 get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 {
@@ -167,7 +207,9 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 
 	g_string_append_printf (mailto,"?");
 	for (l = file_list ; l; l=l->next){
-		g_string_append_printf (mailto,"attach=\"%s\"&", (char *)l->data);
+		char *file_esc = g_uri_escape_string ((char *) l->data, NULL, TRUE); // to handle character ? %
+		g_string_append_printf (mailto,"attach=\"%s\"&", file_esc);
+		g_free (file_esc);
 	}
 	g_string_truncate (mailto, mailto->len - 1); //remove last & (is optional)
 }
@@ -208,7 +250,9 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 
 	g_string_append_printf (mailto,"attachment='");
 	for (l = file_list ; l; l=l->next){
-		g_string_append_printf (mailto,"%s,", (char *)l->data);
+		char *file_esc = replace_a_char_with_str ((char *) l->data, '\'', "%27"); // to handle character ' (needed to handle multiple files)
+		g_string_append_printf (mailto,"%s,", file_esc);
+		g_free (file_esc);
 	}
 	g_string_truncate (mailto, mailto->len - 1); //remove last ,
 	g_string_append (mailto, "'\"");
