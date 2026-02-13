@@ -131,6 +131,33 @@ GtkWidget* get_contacts_widget (NstPlugin *plugin)
 	return entry;
 }
 
+gchar*
+replace_a_char_with_str (const gchar *my_str, char needle, char *replacement)
+{
+
+  const gchar *p;
+  GString *dest;
+
+  g_return_val_if_fail (my_str != NULL, NULL);
+
+  dest = g_string_new ("");
+
+  p = my_str;
+
+  while (*p)
+    {
+      /* Replace needle with replacement */
+      if (*p == needle)
+        g_string_append (dest, replacement);
+      else
+        g_string_append_c (dest, *p);
+
+      ++p;
+    }
+
+  return g_string_free (dest, FALSE);
+}
+
 static void
 get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 {
@@ -186,9 +213,9 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 	if (text != NULL && *text != '\0')
 		g_string_append_printf (mailto, "to='%s',", text);
 
-	g_string_append_printf (mailto,"attachment='%s", (char *)file_list->data);
+	g_string_append_printf (mailto,"attachment='%s", replace_a_char_with_str ((char *)l->data, '\'', "%27") );
 	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto,",%s", (char *)l->data);
+		g_string_append_printf (mailto, ",%s", replace_a_char_with_str ((char *)l->data, '\'', "%27") );
 	}
 	g_string_append (mailto, "'\"");
 }
