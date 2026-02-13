@@ -154,9 +154,11 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\"", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // to handle character ?
+		g_string_append_printf (mailto, "\"%s\"", text_esc);
+		g_free (text_esc);
+	} else
 		g_string_append (mailto, "\"\"");
 
 	g_string_append_printf (mailto, "?");
@@ -186,9 +188,11 @@ get_balsa_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\"", text);
-	else
+	if (text != NULL && *text != '\0') {
+		char *text_quote = g_shell_quote (text);
+		g_string_append_printf (mailto, "%s", text_quote);
+		g_free (text_quote);
+	} else
 		g_string_append (mailto, "\"\"");
 
 	for (l = file_list ; l; l=l->next) {
@@ -206,8 +210,11 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "to='%s',", text);
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // escape characters ? " '
+		g_string_append_printf (mailto, "to=%s,", text_esc);  // Don't use outer quotation here (='%s'), because then it wouldn't be interpreted as percent-encoded text
+		g_free (text_esc);
+	}
 
 	g_string_append_printf (mailto, "attachment='");
 	for (l = file_list ; l; l=l->next) {
@@ -231,8 +238,11 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
-	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "\"%s\" ", text);
+	if (text != NULL && *text != '\0') {
+		char *text_esc = g_uri_escape_string (text, NULL, TRUE); // to handle character ?
+		g_string_append_printf (mailto, "%s ", text_esc);
+		g_free (text_esc);
+	}
 	// Don't insert empty text ("") as email-adress, because it's not supported by Claws.
 
 	g_string_append_printf (mailto, "--attach");
