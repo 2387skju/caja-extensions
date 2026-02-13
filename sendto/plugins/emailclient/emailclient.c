@@ -39,6 +39,7 @@ typedef enum {
 	MAILER_EVO,
 	MAILER_BALSA,
 	MAILER_SYLPHEED,
+	MAILER_CLAWSMAIL,
 	MAILER_THUNDERBIRD,
 } MailerType;
 
@@ -105,8 +106,10 @@ init (NstPlugin *plugin)
 			type = MAILER_BALSA;
 		else if (strstr (mail_cmd, "thunder") || strstr (mail_cmd, "seamonkey"))
 			type = MAILER_THUNDERBIRD;
-		else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws"))
+		else if (strstr (mail_cmd, "sylpheed"))
 			type = MAILER_SYLPHEED;
+		else if (strstr (mail_cmd, "claws"))
+			type = MAILER_CLAWSMAIL;
 		else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution"))
 			type = MAILER_EVO;
 	}
@@ -211,6 +214,27 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	}
 }
 
+static void
+get_clawsmail_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
+{
+	GList *l;
+
+	g_string_append (mailto, "--compose ");
+
+	const char *text;
+
+	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
+	if (text != NULL && *text != '\0')
+		g_string_append_printf (mailto, "\"%s\" ", text);
+	else
+		g_string_append (mailto, "\"\"");
+
+	g_string_append_printf (mailto,"--attach ");
+	for (l = file_list ; l; l=l->next){
+		g_string_append_printf (mailto,"\"%s\" ", (char *)l->data);
+	}
+}
+
 static gboolean
 send_files (NstPlugin *plugin,
 	    GtkWidget *contact_widget,
@@ -226,6 +250,9 @@ send_files (NstPlugin *plugin,
 		break;
 	case MAILER_SYLPHEED:
 		get_sylpheed_mailto (contact_widget, mailto, file_list);
+		break;
+	case MAILER_CLAWSMAIL:
+		get_clawsmail_mailto (contact_widget, mailto, file_list);
 		break;
 	case MAILER_THUNDERBIRD:
 		get_thunderbird_mailto (contact_widget, mailto, file_list);
