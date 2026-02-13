@@ -148,7 +148,7 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 
 	g_string_append_printf (mailto,"?");
 	for (l = file_list ; l; l=l->next){
-		g_string_append_printf (mailto,"attach=\"%s\"&", (char *)l->data);
+		g_string_append_printf (mailto, "attach=%s&", g_shell_quote (g_uri_escape_string ((char *)l->data, NULL, TRUE) ) );
 	}
 }
 
