@@ -211,7 +211,7 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
 	if (text != NULL && *text != '\0')
-		g_string_append_printf (mailto, "to='%s',", text);
+		g_string_append_printf (mailto, "to='%s',", replace_a_char_with_str (text, '\"', "\\\"") );
 
 	g_string_append_printf (mailto,"attachment='%s", replace_a_char_with_str ((char *)l->data, '\'', "%27") );
 	for (l = file_list->next ; l; l=l->next){
