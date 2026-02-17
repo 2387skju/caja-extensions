@@ -159,10 +159,11 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"?attach=\"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto,"&attach=\"%s\"", (char *)l->data);
+	g_string_append_printf (mailto, "?");
+	for (l = file_list ; l; l=l->next) {
+		g_string_append_printf (mailto, "attach=\"%s\"&", (char *)l->data);
 	}
+	if (mailto->str [mailto->len - 1] == '&') g_string_truncate (mailto, mailto->len - 1); //remove last & (is optional)
 }
 
 static void
@@ -181,9 +182,8 @@ get_balsa_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto," --attach=\"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto," --attach=\"%s\"", (char *)l->data);
+	for (l = file_list ; l; l=l->next) {
+		g_string_append_printf (mailto, " --attach=\"%s\"", (char *)l->data);
 	}
 }
 
@@ -200,10 +200,11 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 	if (text != NULL && *text != '\0')
 		g_string_append_printf (mailto, "to='%s',", text);
 
-	g_string_append_printf (mailto,"attachment='%s", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
-		g_string_append_printf (mailto,",%s", (char *)l->data);
+	g_string_append_printf (mailto, "attachment='");
+	for (l = file_list ; l; l=l->next) {
+		g_string_append_printf (mailto, "%s,", (char *)l->data);
 	}
+	if (mailto->str [mailto->len - 1] == ',') g_string_truncate (mailto, mailto->len - 1); //remove last ,
 	g_string_append (mailto, "'\"");
 }
 
@@ -222,8 +223,8 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	else
 		g_string_append (mailto, "\"\"");
 
-	g_string_append_printf (mailto,"--attach \"%s\"", (char *)file_list->data);
-	for (l = file_list->next ; l; l=l->next){
+	g_string_append_printf (mailto, "--attach");
+	for (l = file_list ; l; l=l->next) {
 		g_string_append_printf (mailto," \"%s\"", (char *)l->data);
 	}
 }
