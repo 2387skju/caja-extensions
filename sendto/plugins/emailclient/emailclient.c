@@ -36,7 +36,7 @@
 
 typedef enum {
 	MAILER_UNKNOWN,
-	MAILER_EVO,
+	MAILER_DEFAULT,
 	MAILER_BALSA,
 	MAILER_SYLPHEED,
 	MAILER_THUNDERBIRD,
@@ -95,30 +95,20 @@ init (NstPlugin *plugin)
 	if (mail_cmd == NULL || *mail_cmd == '\0') {
 		g_free (mail_cmd);
 		mail_cmd = get_evo_cmd ();
-		type = MAILER_EVO;
+		type = MAILER_DEFAULT;
 	} else {
+		char *mail_cmd_aux = mail_cmd;
+		mail_cmd = g_strdup_printf ("%s %%s", mail_cmd_aux);
+		g_free (mail_cmd_aux);
 		/* Find what the default mailer is */
-		if (strstr (mail_cmd, "balsa")) {
-			char *mail_cmd_aux = mail_cmd;
-			mail_cmd = g_strdup_printf ("%s %%s", mail_cmd_aux);
-			g_free (mail_cmd_aux);
+		if (strstr (mail_cmd, "balsa"))
 			type = MAILER_BALSA;
-		} else if (strstr (mail_cmd, "thunder") || strstr (mail_cmd, "seamonkey")) {
+		else if (strstr (mail_cmd, "thunder") || strstr (mail_cmd, "seamonkey"))
 			type = MAILER_THUNDERBIRD;
-			char *mail_cmd_aux = mail_cmd;
-			mail_cmd = g_strdup_printf ("%s %%s", mail_cmd_aux);
-			g_free (mail_cmd_aux);
-		} else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws")) {
-			char *mail_cmd_aux = mail_cmd;
-			mail_cmd = g_strdup_printf ("%s %%s", mail_cmd_aux);
-			g_free (mail_cmd_aux);
+		else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws"))
 			type = MAILER_SYLPHEED;
-		} else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution")) {
-			char *mail_cmd_aux = mail_cmd;
-			mail_cmd = g_strdup_printf ("%s %%s", mail_cmd_aux);
-			g_free (mail_cmd_aux);
-			type = MAILER_EVO;
-		}
+		else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution") || strstr (mail_cmd, "geary"))
+			type = MAILER_DEFAULT;
 	}
 
 	if (mail_cmd == NULL)
@@ -139,8 +129,14 @@ GtkWidget* get_contacts_widget (NstPlugin *plugin)
 }
 
 static void
-get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
+get_default_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 {
+  // Works with:
+  //  - Evolution
+  //  - Geary
+  //  - KMail
+  //  - ...
+
 	GList *l;
 
 	g_string_append (mailto, "mailto:");
@@ -271,9 +267,9 @@ send_files (NstPlugin *plugin,
 	case MAILER_THUNDERBIRD:
 		get_thunderbird_mailto (contact_widget, mailto, file_list);
 		break;
-	case MAILER_EVO:
+	case MAILER_DEFAULT:
 	default:
-		get_evo_mailto (contact_widget, mailto, file_list);
+		get_default_mailto (contact_widget, mailto, file_list);
 	}
 
 	cmd = g_strdup_printf (mail_cmd, mailto->str);
