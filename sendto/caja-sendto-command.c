@@ -717,6 +717,10 @@ caja_sendto_plugin_init (void)
 static char *
 escape_ampersands_and_commas (const char *url)
 {
+	// This escape was exclusive added to handle characters:
+	//  - ampersand: only for email-client evolution (not needed anymore)
+	//  - comma: only for email-client thunderbird
+
 	int i;
 	char *str, *ptr;
 

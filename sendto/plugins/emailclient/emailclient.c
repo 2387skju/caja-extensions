@@ -151,7 +151,7 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 
 	g_string_append (mailto, "mailto:");
 
-		const char *text;
+	const char *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
 	if (text != NULL && *text != '\0')
@@ -161,9 +161,18 @@ get_evo_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
 
 	g_string_append_printf (mailto, "?");
 	for (l = file_list ; l; l=l->next) {
-		g_string_append_printf (mailto, "attach=\"%s\"&", (char *)l->data);
+		// The filename must be full %-encoded;
+		// otherwise, we'll have problems with these characters: ? % & #
+		char *filename_clean = g_filename_from_uri ((char *) l->data, NULL, NULL);
+		if (filename_clean != NULL)
+		{
+			char *file_esc = g_uri_escape_string (filename_clean, NULL, TRUE);
+			g_string_append_printf (mailto, "attach=\"%s\"&", file_esc); // the " around the %s are optional here (at least for clients Evolution and Geary)
+			g_free (file_esc);
+		}
+		g_free (filename_clean);
 	}
-	if (mailto->str [mailto->len - 1] == '&') g_string_truncate (mailto, mailto->len - 1); //remove last & (is optional)
+	if (mailto->str [mailto->len - 1] == '&') g_string_truncate (mailto, mailto->len - 1); //remove last & (at least for clients Evolution and Geary)
 }
 
 static void
