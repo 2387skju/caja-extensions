@@ -212,6 +212,7 @@ get_thunderbird_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_
 	g_string_append_printf (mailto, "attachment='");
 	for (l = file_list ; l; l=l->next) {
 		GString *file_esc = g_string_new ((char *) l->data);
+		g_string_replace (file_esc, "\'", "%27", 0); // escape ' (this is only for a very rare problem: e.g. attach this two filenames, in this exact order: a' and abc )
 		g_string_replace (file_esc, ",", "%2C", 0); // escape , (needed to handle multiple files)
 		g_string_append_printf (mailto, "%s,", file_esc->str);
 		g_string_free (file_esc, TRUE);
