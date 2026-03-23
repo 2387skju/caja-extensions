@@ -247,8 +247,6 @@ get_clawsmail_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_li
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
 	if (text != NULL && *text != '\0')
 		g_string_append_printf (mailto, "\"%s\" ", text);
-	else
-		g_string_append (mailto, "\"\"");
 
 	g_string_append_printf (mailto, "--attach");
 	for (l = file_list ; l; l=l->next) {
