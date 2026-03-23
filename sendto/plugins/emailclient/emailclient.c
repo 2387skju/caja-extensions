@@ -220,12 +220,18 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
 	if (text != NULL && *text != '\0')
 		g_string_append_printf (mailto, "\"%s\" ", text);
-	else
-		g_string_append (mailto, "\"\"");
+	// Don't insert empty text ("") as email-adress, because it's not supported by Claws.
 
 	g_string_append_printf (mailto, "--attach");
 	for (l = file_list ; l; l=l->next) {
-		g_string_append_printf (mailto," \"%s\"", (char *)l->data);
+		char *filename_clean = g_filename_from_uri ((char *) l->data, NULL, NULL); // Sylpheed doesn't understand URIs
+		if (filename_clean != NULL)
+		{
+			char *filename_clean_esc = g_shell_quote (filename_clean);
+			g_string_append_printf (mailto, " %s", filename_clean_esc);
+			g_free (filename_clean_esc);
+		}
+		g_free (filename_clean);
 	}
 }
 
