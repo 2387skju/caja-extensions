@@ -39,6 +39,7 @@ typedef enum {
 	MAILER_DEFAULT,
 	MAILER_BALSA,
 	MAILER_SYLPHEED,
+	MAILER_KMAIL,
 	MAILER_THUNDERBIRD,
 } MailerType;
 
@@ -107,6 +108,8 @@ init (NstPlugin *plugin)
 			type = MAILER_THUNDERBIRD;
 		else if (strstr (mail_cmd, "sylpheed") || strstr (mail_cmd, "claws"))
 			type = MAILER_SYLPHEED;
+		else if (strstr (mail_cmd, "kmail"))
+			type = MAILER_KMAIL;
 		else if (strstr (mail_cmd, "anjal") || strstr (mail_cmd, "evolution") || strstr (mail_cmd, "geary"))
 			type = MAILER_DEFAULT;
 	}
@@ -248,6 +251,31 @@ get_sylpheed_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_lis
 	}
 }
 
+static void
+get_kmail_mailto (GtkWidget *contact_widget, GString *mailto, GList *file_list)
+{
+	// Alternatively: KMail would also supports mailto
+
+	GList *l;
+
+	g_string_append (mailto, "--composer ");
+
+	const char *text;
+
+	text = gtk_entry_get_text (GTK_ENTRY (contact_widget));
+	if (text != NULL && *text != '\0') {
+		char *text_quote = g_shell_quote (text);
+		g_string_append_printf (mailto, "%s ", text_quote);
+		g_free (text_quote);
+	}
+
+	for (l = file_list ; l; l=l->next){
+		char *filename_esc = g_shell_quote ((char *) l->data);
+		g_string_append_printf (mailto," --attach %s", filename_esc);
+		g_free (filename_esc);
+	}
+}
+
 static gboolean
 send_files (NstPlugin *plugin,
 	    GtkWidget *contact_widget,
@@ -263,6 +291,9 @@ send_files (NstPlugin *plugin,
 		break;
 	case MAILER_SYLPHEED:
 		get_sylpheed_mailto (contact_widget, mailto, file_list);
+		break;
+	case MAILER_KMAIL:
+		get_kmail_mailto (contact_widget, mailto, file_list);
 		break;
 	case MAILER_THUNDERBIRD:
 		get_thunderbird_mailto (contact_widget, mailto, file_list);
